@@ -68,7 +68,7 @@ public class Program {
 
 	//Nouvelles méthodes 
 
-	public boolean member (int residentID){ // pas faite
+	public boolean member (int residentID){ // pas faite - retourne vrai si l'utilisateur fait parti de la liste de preference pour ce programme
 		return false;
 	}
 
@@ -98,6 +98,6 @@ public class Program {
 		return leastPreferredResidentID;
 	}
 
-	public void addResident(int resident){ // pas faite 
+	public void addResident(int resident){ // pas faite - ajoute resident a la liste de jumeles / selected pour le programme 
 	}
 }
