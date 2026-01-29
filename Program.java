@@ -10,7 +10,9 @@ public class Program {
 	private int quota;
 	private int[] rol;
 	private String[] matchedResidents;
+	private String[] unmatchedResidents;
 	private int matchedCount=0;
+	private int unmatchedCount=0;
 	 // index du prochain résident à proposer
 	
 	// constructs a Program
@@ -20,6 +22,8 @@ public class Program {
 		name= n;
 		quota= q;
 		matchedResidents= new String[quota];
+		unmatchedResidents = new String[10];
+
 		
 	}
 
@@ -29,7 +33,7 @@ public class Program {
 		this.rol= rol;
 	}
 
-	public int[] getROL(){
+	public int[] getrol(){
 		return rol;
 	}
 	
@@ -67,8 +71,17 @@ public class Program {
 	
 
 	//Nouvelles méthodes 
+	public boolean existUnmatched() {
+		return unmatchedCount != 0;
+
+	}
 
 	public boolean member (int residentID){ // pas faite - retourne vrai si l'utilisateur fait parti de la liste de preference pour ce programme
+		for (int i = 0; i < rol.length; i++){ 
+			if (rol[i] == residentID){
+				return true;
+			}
+		}
 		return false;
 	}
 
@@ -99,5 +112,13 @@ public class Program {
 	}
 
 	public void addResident(int resident){ // pas faite - ajoute resident a la liste de jumeles / selected pour le programme 
+		
+		if ( matchedCount < quota){
+			matchedResidents[matchedCount] = Integer.toString(resident);
+			matchedCount++;
+		}
+
+		
+
 	}
 }
