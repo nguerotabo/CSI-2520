@@ -66,7 +66,7 @@ public class Program {
     }
 
     //Nouvelles méthodes 
-    public boolean member(int residentID) { // pas faite - retourne vrai si l'utilisateur fait parti de la liste de preference pour ce programme
+    public boolean member(int residentID) { //on veut retourner vrai si l'utilisateur fait parti de la liste de preference pour ce programme
         for (int i = 0; i < rol.length; i++) {
             if (rol[i] == residentID) {
                 return true;
@@ -91,7 +91,7 @@ public class Program {
         Resident leastPreferredResident = matchedResidents[0];
         int leastPreferredRank = rank(leastPreferredResident.getId());
         for (int i = 0; i < matchedCount; i++) {
-            Resident residentID = matchedResidents[i]; // convertir en int
+            Resident residentID = matchedResidents[i]; 
             int rank = rank(residentID.getId());
             if (rank > leastPreferredRank) { // on veut le rang le plus élevé 
                 leastPreferredRank = rank;
@@ -101,7 +101,7 @@ public class Program {
         return leastPreferredResident;
     }
 
-    public void removeMatchedResident(Resident r) {
+    public void removeMatchedResident(Resident r) { // retire un resident de la liste des jumeles 
         int index = -1;
         for (int i = 0; i < matchedCount; i++) {
             if (matchedResidents[i].getId() == r.getId()) {
@@ -114,6 +114,7 @@ public class Program {
             return;
         }
 
+        // on veut décaller les résidents restants sur la gauche
         for (int i = index; i < matchedCount - 1; i++) {
             matchedResidents[i] = matchedResidents[i + 1];
         }
@@ -125,21 +126,23 @@ public class Program {
 
     public Resident addResident(Resident r) { // pas faite - ajoute resident a la liste de jumeles / selected pour le programme 
 
-        // etape 1
+        // Etape 1 : vérifier si le résident fait partie de la liste de préférence
         if (!member(r.getId())) {
             return r;
         }
-        //etape 2 
+
+        // etape 2 : vérifier si le programme a encore de la place
         if (matchedCount < quota) {
             matchedResidents[matchedCount] = r;
             matchedCount++;
             return null;
         }
 
-        // etape 3 
+        // etape 3 : le programme est plein, vérifier si le nouveau résident est préféré au actuel pire résident 
         Resident worst = leastPreferred();
         int rangR = rank(r.getId());
         int rangWorst = rank(worst.getId());
+
         // Si le candidat est meilleur que le pire, on remplace
         if (rangR < rangWorst) {
             removeMatchedResident(worst);
