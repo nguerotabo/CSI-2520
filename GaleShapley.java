@@ -4,6 +4,9 @@
 
 import java.io.*;
 import java.util.HashMap;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Queue;
 
 // this is the (incomplete) class that will generate the resident and program maps
 public class GaleShapley {
@@ -183,6 +186,107 @@ public class GaleShapley {
         }
     }
 
+    public ArrayList<Resident> match() {
+        ArrayList<Resident> unmatched = new ArrayList<Resident>();
+        Queue<Resident> available = new ArrayDeque<Resident>();
+
+        for (Resident r : residents.values()) {
+            if (!r.isMatched() && r.hasMorePrograms()) {
+                available.add(r);
+            }
+        }
+
+        // while (exists available resident)
+        while (!available.isEmpty()) {
+
+            // pick any available resident r 
+            Resident r = available.remove();
+
+            boolean isMatchedNow = false;
+
+            // for all program p in ROLresidents(r) 
+            while (r.hasMorePrograms() && !isMatchedNow) {
+                String programID = r.getCurrentProgram();
+                r.nextProgram();
+
+                Program p = programs.get(programID);
+
+                // si le programme n'existe pas, on passe au suivant
+            if (p == null) {
+                continue;
+            }
+
+            // if (r ∉ ROLprograms(p)) continue
+            if (!p.member(r.getId())) {
+                continue;
+            }
+
+            // sinon, on laisse le programme decider quota / remplacement / rejet
+            Resident result = p.addResident(r);
+
+            // si accepte sans expulser
+            if (result == null) {
+                r.setMatchedProgram(p.getID());
+                isMatchedNow = true;
+            }
+            // si expulsion
+            else if (result.getId() != r.getId()) {
+                Resident expelled = result;
+
+                expelled.setMatchedProgram(null);
+                if (expelled.hasMorePrograms()) {
+                    available.add(expelled);
+                } else {
+                    unmatched.add(expelled);
+                }
+
+                r.setMatchedProgram(p.getID());
+                isMatchedNow = true;
+            }
+            // sinon rejet, on continue dans la boucle while pour tester le prochain programme
+        }
+
+        // if (r exhausted their ROL) then Unmatched += r
+        if (!r.isMatched()) {
+            unmatched.add(r);
+        }
+
+    }
+    return unmatched;
+
+}
+
+    public void writeOutput(String outputFilename, ArrayList<Resident> unmatched) throws IOException {
+
+        PrintWriter out = new PrintWriter(new FileWriter(outputFilename));
+
+        int unmatchedCount = 0;
+
+        for (Resident r : residents.values()) {
+
+            String pid = r.getMatchedProgram();
+
+            if (pid == null) {
+                out.println(r.getLastName() + "," + r.getFirstName() + "," + r.getId() + ",XXX,NOT_MATCHED");
+                unmatchedCount++;
+            } else {
+                Program p = programs.get(pid);
+                String pname = (p == null) ? "" : p.getName();
+                out.println(r.getLastName() + "," + r.getFirstName() + "," + r.getId() + "," + pid + "," + pname);
+            }
+        }
+
+        int positionsAvailable = 0;
+        for (Program p : programs.values()) {
+            positionsAvailable += (p.getQuota() - p.getMatchedCount());
+        }
+
+        out.println("Number of unmatched residents: " + unmatchedCount);
+        out.println("Number of positions available: " + positionsAvailable);
+
+        out.close();
+    }
+
     public static void main(String[] args) {
 
         try {
@@ -192,8 +296,15 @@ public class GaleShapley {
             System.out.println(gs.residents);
             System.out.println(gs.programs);
 
+            // lancer l'algorithme de jumelage
+            java.util.ArrayList<Resident> unmatched = gs.match();
+
+            // ecrire la sortie dans un fichier texte
+            gs.writeOutput(args[2], unmatched);
+
         } catch (Exception e) {
             System.err.println("Error reading the file: " + e.getMessage());
         }
+
     }
 }

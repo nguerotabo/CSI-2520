@@ -65,6 +65,11 @@ public class Program {
         return quota;
     }
 
+    public int getMatchedCount() {
+    return matchedCount;
+}
+
+
     //Nouvelles méthodes 
     public boolean member(int residentID) { //on veut retourner vrai si l'utilisateur fait parti de la liste de preference pour ce programme
         for (int i = 0; i < rol.length; i++) {
@@ -124,7 +129,7 @@ public class Program {
 
     }
 
-    public Resident addResident(Resident r) { // pas faite - ajoute resident a la liste de jumeles / selected pour le programme 
+    public Resident addResident(Resident r) { // tente d'ajouter un resident au programme, retourne le resident rejeté ou null si aucun rejet
 
         // Etape 1 : vérifier si le résident fait partie de la liste de préférence
         if (!member(r.getId())) {
