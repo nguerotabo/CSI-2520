@@ -9,10 +9,10 @@ public class Program {
 	private String name;
 	private int quota;
 	private int[] rol;
-	private String[] matchedResidents;
-	private String[] unmatchedResidents;
+	private Resident[] matchedResidents;
+	
 	private int matchedCount=0;
-	private int unmatchedCount=0;
+	
 	 // index du prochain résident à proposer
 	
 	// constructs a Program
@@ -21,8 +21,8 @@ public class Program {
 		programID= id;
 		name= n;
 		quota= q;
-		matchedResidents= new String[quota];
-		unmatchedResidents = new String[10];
+		matchedResidents= new Resident[quota];
+		
 
 		
 	}
@@ -71,10 +71,7 @@ public class Program {
 	
 
 	//Nouvelles méthodes 
-	public boolean existUnmatched() {
-		return unmatchedCount != 0;
 
-	}
 
 	public boolean member (int residentID){ // pas faite - retourne vrai si l'utilisateur fait parti de la liste de preference pour ce programme
 		for (int i = 0; i < rol.length; i++){ 
@@ -94,29 +91,26 @@ public class Program {
 		return -1;
 	}
 
-	public int leastPreferred(){
+	public Resident leastPreferred(){
 		if (matchedCount == 0){
-			return -1; // pas de resident
+			return null ; // pas de resident
 		}
-		int leastPreferredRank = -1;
-		int leastPreferredResidentID = -1;
+		Resident leastPreferredResident = matchedResidents[0];
+		int leastPreferredRank = rank(leastPreferredResident.getId());
 		for (int i = 0; i < matchedCount; i++){
-			int residentID = Integer.parseInt(matchedResidents[i]); // convertir en int
-			int rank = rank(residentID);
+			Resident residentID = matchedResidents[i]; // convertir en int
+			int rank = rank(residentID.getId());
 			if (rank > leastPreferredRank){ // on veut le rang le plus élevé 
 				leastPreferredRank = rank;
-				leastPreferredResidentID = residentID;
+				leastPreferredResident = residentID;
 			}
 		}
-		return leastPreferredResidentID;
+		return leastPreferredResident;
 	}
 
 	public void addResident(int resident){ // pas faite - ajoute resident a la liste de jumeles / selected pour le programme 
 		
-		if ( matchedCount < quota){
-			matchedResidents[matchedCount] = Integer.toString(resident);
-			matchedCount++;
-		}
+	
 
 		
 
