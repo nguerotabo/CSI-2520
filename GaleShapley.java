@@ -6,6 +6,8 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Queue;
 
 // this is the (incomplete) class that will generate the resident and program maps
@@ -212,80 +214,93 @@ public class GaleShapley {
                 Program p = programs.get(programID);
 
                 // si le programme n'existe pas, on passe au suivant
-            if (p == null) {
-                continue;
-            }
-
-            // if (r ∉ ROLprograms(p)) continue
-            if (!p.member(r.getId())) {
-                continue;
-            }
-
-            // sinon, on laisse le programme decider quota / remplacement / rejet
-            Resident result = p.addResident(r);
-
-            // si accepte sans expulser
-            if (result == null) {
-                r.setMatchedProgram(p.getID());
-                isMatchedNow = true;
-            }
-            // si expulsion
-            else if (result.getId() != r.getId()) {
-                Resident expelled = result;
-
-                expelled.setMatchedProgram(null);
-                if (expelled.hasMorePrograms()) {
-                    available.add(expelled);
-                } else {
-                    unmatched.add(expelled);
+                if (p == null) {
+                    continue;
                 }
 
-                r.setMatchedProgram(p.getID());
-                isMatchedNow = true;
-            }
-            // sinon rejet, on continue dans la boucle while pour tester le prochain programme
-        }
+                // if (r ∉ ROLprograms(p)) continue
+                if (!p.member(r.getId())) {
+                    continue;
+                }
 
-        // if (r exhausted their ROL) then Unmatched += r
-        if (!r.isMatched()) {
-            unmatched.add(r);
+                // sinon, on laisse le programme decider quota / remplacement / rejet
+                Resident result = p.addResident(r);
+
+                // si accepte sans expulser
+                if (result == null) {
+                    r.setMatchedProgram(p.getID());
+                    isMatchedNow = true;
+                } // si expulsion
+                else if (result.getId() != r.getId()) {
+                    Resident expelled = result;
+
+                    expelled.setMatchedProgram(null);
+                    if (expelled.hasMorePrograms()) {
+                        available.add(expelled);
+                    } else {
+                        unmatched.add(expelled);
+                    }
+
+                    r.setMatchedProgram(p.getID());
+                    isMatchedNow = true;
+                }
+                // sinon rejet, on continue dans la boucle while pour tester le prochain programme
+            }
+
+            // if (r exhausted their ROL) then Unmatched += r
+            if (!r.isMatched() && !r.hasMorePrograms()) {
+                unmatched.add(r);
+            }
+
         }
+        return unmatched;
 
     }
-    return unmatched;
 
+    public void writeOutput(String outputFilename, ArrayList<Resident> unmatched) throws IOException { // ecrire la sortie dans un fichier texte
+
+    PrintWriter out = new PrintWriter(new FileWriter(outputFilename));
+
+    out.println("lastname,firstname,residentID,programID,name");
+
+    ArrayList<Resident> list = new ArrayList<Resident>(residents.values()); // on copie les residents dans une liste pour le tri
+    Collections.sort(list, new Comparator<Resident>() {
+        public int compare(Resident a, Resident b) {
+            int c = a.getLastName().compareTo(b.getLastName());
+            if (c != 0) return c;
+            c = a.getFirstName().compareTo(b.getFirstName());
+            if (c != 0) return c;
+            return Integer.compare(a.getId(), b.getId());
+        }
+    });
+
+    int unmatchedCount = 0;
+
+for (Resident r : list) { // on parcourt les residents triés
+
+        String pid = r.getMatchedProgram();
+
+        if (pid == null) { // pas de programme matché
+            out.println(r.getLastName() + "," + r.getFirstName() + "," + r.getId() + ",XXX,NOT_MATCHED");
+            unmatchedCount++;
+        } else { 
+            Program p = programs.get(pid);
+            String pname = (p == null) ? "" : p.getName();
+            out.println(r.getLastName() + "," + r.getFirstName() + "," + r.getId() + "," + pid + "," + pname);
+        }
+    }
+
+    int positionsAvailable = 0;
+    for (Program p : programs.values()) { // on calcule le nombre de positions disponibles
+        positionsAvailable += (p.getQuota() - p.getMatchedCount());
+    }
+
+    out.println("Number of unmatched residents: " + unmatchedCount);
+    out.println("Number of positions available: " + positionsAvailable);
+
+    out.close();
 }
 
-    public void writeOutput(String outputFilename, ArrayList<Resident> unmatched) throws IOException {
-
-        PrintWriter out = new PrintWriter(new FileWriter(outputFilename));
-
-        int unmatchedCount = 0;
-
-        for (Resident r : residents.values()) {
-
-            String pid = r.getMatchedProgram();
-
-            if (pid == null) {
-                out.println(r.getLastName() + "," + r.getFirstName() + "," + r.getId() + ",XXX,NOT_MATCHED");
-                unmatchedCount++;
-            } else {
-                Program p = programs.get(pid);
-                String pname = (p == null) ? "" : p.getName();
-                out.println(r.getLastName() + "," + r.getFirstName() + "," + r.getId() + "," + pid + "," + pname);
-            }
-        }
-
-        int positionsAvailable = 0;
-        for (Program p : programs.values()) {
-            positionsAvailable += (p.getQuota() - p.getMatchedCount());
-        }
-
-        out.println("Number of unmatched residents: " + unmatchedCount);
-        out.println("Number of positions available: " + positionsAvailable);
-
-        out.close();
-    }
 
     public static void main(String[] args) {
 
@@ -293,8 +308,10 @@ public class GaleShapley {
 
             GaleShapley gs = new GaleShapley(args[0], args[1]);
 
-            System.out.println(gs.residents);
-            System.out.println(gs.programs);
+            //retirer les deux system.out.println en commentaires pour debug 
+
+            //System.out.println(gs.residents);
+            //System.out.println(gs.programs);
 
             // lancer l'algorithme de jumelage
             java.util.ArrayList<Resident> unmatched = gs.match();
