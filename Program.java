@@ -30,7 +30,7 @@ public class Program {
         this.rol = rol;
     }
 
-    public int[] getrol() {
+    public int[] getROL() {
         return rol;
     }
 

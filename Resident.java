@@ -10,7 +10,6 @@ public class Resident {
     private String lastname;
     private String[] rol;
     private String matchedProgram;
-    private int matchedRank;
     private int nextProgramIndex = 0; // index du prochain programme à proposer
 
     // constructs a Resident

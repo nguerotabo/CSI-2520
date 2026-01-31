@@ -2,8 +2,8 @@
 
 ## Nom et Numero Etudiant des membres du groupe
 
-- Nom: ______________________ 
--  Numero etudiant: ______________________
+- Nom: Nguero Tabo
+-  Numero etudiant: 300434356
 - Nom: Brayan Adou  
 - Numero etudiant: 300433616
 
